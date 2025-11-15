@@ -1,8 +1,8 @@
 #include <iostream>
 #include <limits>
 #include <conio.h>
+#include <cstdlib>
 using namespace std;
-
 
 string encrypt(string plaintext, string keyword, char table[26][26]) {
     string ciphertext = "";
@@ -10,12 +10,12 @@ string encrypt(string plaintext, string keyword, char table[26][26]) {
     int j = 0;
 
     for(char c : plaintext) {
-        if(c >= 'A' && c <= 'Z') {       //uppercase letters
+        if(c >= 'A' && c <= 'Z') {
             int row = keyword[j % keyLen] - 'A';
             int col = c - 'A';
             ciphertext += table[row][col];
             j++;
-        } else if(c >= 'a' && c <= 'z') { //lowercase letters
+        } else if(c >= 'a' && c <= 'z') {
             int row = toupper(keyword[j % keyLen]) - 'A';
             int col = toupper(c) - 'A';
             ciphertext += table[row][col];
@@ -46,7 +46,6 @@ string getHiddenInput() {
     return pass;
 }
 
-
 string decrypt(string ciphertext, string keyword, char table[26][26]) {
     string plaintext = "";
     int keyLen = keyword.length();
@@ -71,7 +70,6 @@ string decrypt(string ciphertext, string keyword, char table[26][26]) {
     }
     return plaintext;
 }
-
 
 void decryptMenu(string keyword, char table[26][26], string ciphertext) {
     int decryptOption;
@@ -104,113 +102,115 @@ void decryptMenu(string keyword, char table[26][26], string ciphertext) {
     }
 }
 
-
-
 int main(){
     int options;
-string password = "";
-string keyPass = "Sarkd1297";
-string keyword = "Knight";
-string plaintext = "";
-string ciphertext = "";
-string keyedAlphabet = "KNIGHTFEWRYABCDJLMOPQSUVXZ";
-char vigenereTable[26][26];
-    for(int i = 0; i < 26; i++) {
-        for(int j = 0; j < 26; j++) {
+    string password = "";
+    string keyword = "Knight";
+    string plaintext = "";
+    string ciphertext = "";
+    string keyedAlphabet = "KNIGHTFEWRYABCDJLMOPQSUVXZ";
+    char vigenereTable[26][26];
+
+    for(int i = 0; i < 26; i++)
+        for(int j = 0; j < 26; j++)
             vigenereTable[i][j] = keyedAlphabet[(i + j) % 26];
-        }
+
+    const char* envPass = getenv("VIGENERE_PASS");
+    const char* envKeyPass = getenv("VIGENERE_KEYPASS");
+
+    if (envPass == nullptr) {
+        cout << "\nError: Environment variable VIGENERE_PASS is not set.\n";
+        return 1;
     }
-      cout << "\nEnter Password: ";
-password = getHiddenInput();
+    if (envKeyPass == nullptr) {
+        cout << "\nError: Environment variable VIGENERE_KEYPASS is not set.\n";
+        return 1;
+    }
 
+    string storedPassword = string(envPass);
+    string keyPass = string(envKeyPass);
 
-if(password!="NightFury"){
-    cout<<"\n--------------Access Denied!--------------";
-    return 0;
-}else{
-cout<<"\n\n!--------------Access Granted--------------!";
-}
-cout<<"\n\nWelcome back Amaan!";
-while(true) {
-cout<<"\n\n==VIGENÈRE CIPHER PROGRAM==";
-cout<<"\n   1. Encrypt plaintext";
-cout<<"\n   2. Decrypt ciphertext";
-cout<<"\n   3. Enter plaintext";
-cout<<"\n   4. View plaintext";
-cout<<"\n   5. Change keyword (with a key-change password)";
-cout<<"\n   6. Show Vigenère table";
-cout<<"\n   7. Exit\n";
-cout << "\nEnter your choice: ";
-cin >> options;
-cin.ignore();
-    switch(options) {
-         case 1:
-            if(plaintext.empty()) {
-    cout << "\nNo plaintext entered! Please enter plaintext first.";
-} else {
-    ciphertext = encrypt(plaintext, keyword, vigenereTable);
-    cout << "\nCiphertext: " << ciphertext;
-}        break;
+    cout << "\nEnter Password: ";
+    password = getHiddenInput();
 
+    if(password != storedPassword){
+        cout<<"\n--------------Access Denied!--------------";
+        return 0;
+    } else {
+        cout<<"\n\n!--------------Access Granted--------------!";
+    }
 
-         case 2:
-          decryptMenu(keyword, vigenereTable, ciphertext);
-         break;
+    cout<<"\n\nWelcome back Amaan!";
+    while(true) {
+        cout<<"\n\n==VIGENÈRE CIPHER PROGRAM==";
+        cout<<"\n   1. Encrypt plaintext";
+        cout<<"\n   2. Decrypt ciphertext";
+        cout<<"\n   3. Enter plaintext";
+        cout<<"\n   4. View plaintext";
+        cout<<"\n   5. Change keyword (with a key-change password)";
+        cout<<"\n   6. Show Vigenère table";
+        cout<<"\n   7. Exit\n";
+        cout << "\nEnter your choice: ";
+        cin >> options;
+        cin.ignore();
 
-         case 3:
-             cout << "\nEnter plaintext: ";
-             getline(cin, plaintext);
-         break;
+        switch(options) {
+            case 1:
+                if(plaintext.empty()) {
+                    cout << "\nNo plaintext entered! Please enter plaintext first.";
+                } else {
+                    ciphertext = encrypt(plaintext, keyword, vigenereTable);
+                    cout << "\nCiphertext: " << ciphertext;
+                }
+                break;
 
+            case 2:
+                decryptMenu(keyword, vigenereTable, ciphertext);
+                break;
 
-         case 4:
-             cout << "\nPlaintext: " << (plaintext.empty() ? "[No plaintext entered]" : plaintext);
-         break;
+            case 3:
+                cout << "\nEnter plaintext: ";
+                getline(cin, plaintext);
+                break;
 
+            case 4:
+                cout << "\nPlaintext: " << (plaintext.empty() ? "[No plaintext entered]" : plaintext);
+                break;
 
-         case 5: {
-             cout << "\nEnter key-change password: ";
-             string inputKeyPass;
-             cin >> inputKeyPass;
+            case 5: {
+                cout << "\nEnter key-change password: ";
+                string inputKeyPass;
+                cin >> inputKeyPass;
                 if(inputKeyPass == keyPass) {
                     cout << "\nEnter new keyword: ";
                     cin.ignore();
                     getline(cin, keyword);
                     cout << "\nKeyword updated successfully!";
-                }else{
+                } else {
                     cout << "\nIncorrect password. Access denied.";
                 }
-         break;
+                break;
             }
 
+            case 6:
+                cout << "\nVigenère Table:\n\n   ";
+                for(int k = 0; k < 26; k++) cout << char('A' + k) << " ";
+                cout << "\n";
+                for(int i = 0; i < 26; i++) {
+                    cout << char('A' + i) << "  ";
+                    for(int j = 0; j < 26; j++)
+                        cout << vigenereTable[i][j] << " ";
+                    cout << "\n";
+                }
+                break;
 
-         case 6:
-    cout << "\nVigenère Table:\n\n   ";
-    for(int k = 0; k < 26; k++) cout << char('A' + k) << " ";
-    cout << "\n";
-
-    for(int i = 0; i < 26; i++) {
-        cout << char('A' + i) << "  ";
-        for(int j = 0; j < 26; j++) {
-            cout << vigenereTable[i][j] << " ";
-        }
-        cout << "\n";
-    }
-         break;
-
-
-         case 7:
-             cout << "\nExiting program. Goodbye!";
+            case 7:
+                cout << "\nExiting program. Goodbye!";
                 return 0;
 
-
-         default:
-             cout << "\nInvalid option. Please try again.";
+            default:
+                cout << "\nInvalid option. Please try again.";
         }
-
-
-
+    }
+    return 0;
 }
-return 0;
-}
-
